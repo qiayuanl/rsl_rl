@@ -218,6 +218,13 @@ class OnPolicyRunner:
             'infos': infos,
             }, path)
 
+        directory, name = os.path.split(path)
+        onnx_dir = os.path.join(directory, "onnx")
+        if not os.path.exists(onnx_dir):
+            os.makedirs(onnx_dir)
+        dummy_observation = torch.randn(1, self.env.num_obs, device=self.device)
+        torch.onnx.export(model=self.alg.actor_critic, args=dummy_observation, f=os.path.join(onnx_dir, name.replace('.pt', '.onnx')))
+
     def load(self, path, load_optimizer=True):
         loaded_dict = torch.load(path)
         self.alg.actor_critic.load_state_dict(loaded_dict['model_state_dict'])
